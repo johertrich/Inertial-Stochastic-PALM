@@ -219,7 +219,7 @@ and f_1=f_2=f_3=f_4=0. Thus PALM becomes basically a block gradient descent algo
 For more detailed description of this example, we refer to [3]. 
 
 The third example computes the sparse PCA of some data points. That is, to minimize
-min_{X,Y} ||A-XY||_F^2+||X||_1+||Y||_1,
+min_{X,Y} ||A-XY||_F^2+lambda_1 ||X||_1+lambda_2 ||Y||_1,
 where A is a n x d matrix, X is a n x r and Y is a r x d matrix and ||X||_1 denotes the 1-Norm of the vectorized
 matrix X.
 For more details and further references on the sparse PCA we refer to [2] and [3].
