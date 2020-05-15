@@ -131,7 +131,7 @@ sarah_seq=tf.random.uniform(shape=[epch*steps_per_epch*4+100],minval=0,maxval=1,
 # warm start and PALM_Model declaration
 model=PALM_Model(init_vals,dtype='float64')
 model.H=H
-optimize_PALM(model3,data=samples,batch_size=batch_size,method='PALM',EPOCHS=2,step_size=1,steps_per_epoch=steps_per_epch,precompile=False)
+optimize_PALM(model,data=samples,batch_size=batch_size,method='PALM',EPOCHS=2,step_size=1)
 init_vals_warm=[model.X[0].numpy(),model.X[1].numpy(),model.X[2].numpy(),model.X[3].numpy()]
 model2=PALM_Model(init_vals_warm,dtype='float64')
 model3=PALM_Model(init_vals_warm,dtype='float64')
@@ -143,8 +143,8 @@ model4.H=H
 # run algorithms
 spring=optimize_PALM(model,data=samples,batch_size=batch_size,method='SPRING-SARAH',EPOCHS=epch,step_size=0.7,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq)
 ispring=optimize_PALM(model2,data=samples,batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.7,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq)
-palm=optimize_PALM(model3,data=samples,batch_size=batch_size,method='PALM',EPOCHS=epch,step_size=1,steps_per_epoch=steps_per_epch,precompile=True)
-ipalm=optimize_PALM(model4,data=samples,batch_size=batch_size,method='iPALM',EPOCHS=epch,step_size=1,steps_per_epoch=steps_per_epch,precompile=True)
+palm=optimize_PALM(model3,data=samples,batch_size=batch_size,method='PALM',EPOCHS=epch,step_size=1,precompile=True)
+ipalm=optimize_PALM(model4,data=samples,batch_size=batch_size,method='iPALM',EPOCHS=epch,step_size=1,precompile=True)
 
 # Plot results
 

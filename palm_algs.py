@@ -161,7 +161,7 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
     @tf.function
     def eval_objective():
         if batch_version:
-            obj=0.
+            obj=tf.constant(0.,dtype=model.model_type)
             for batch in test_ds:
                 obj+=model.objective(batch=batch)
             return obj
