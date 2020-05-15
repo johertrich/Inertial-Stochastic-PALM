@@ -1,3 +1,11 @@
+# This code belongs to the paper
+#
+# J. Hertrich and G. Steidl. 
+# Inertial stochastic palm and its application for learning Student-t mixture models. 
+# ArXiv preprint arXiv:2005.02204, 2020.
+#
+# Please cite the paper, if you use the code.
+
 from palm_algs import *
 import numpy.random
 import numpy.matlib

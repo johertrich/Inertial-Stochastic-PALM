@@ -1,3 +1,11 @@
+# This code belongs to the paper
+#
+# J. Hertrich and G. Steidl. 
+# Inertial stochastic palm and its application for learning Student-t mixture models. 
+# ArXiv preprint arXiv:2005.02204, 2020.
+#
+# Please cite the paper, if you use the code.
+#
 # This function implements the sparse PCA using an implementation PALM, iPALM, SPRING-SARAH and iSPRING-SARAH 
 # from scratch for comparing the perfomance of these algorithms.
 # The general framework of PALM, iPALM, SPRING-SARAH and iSPRING-SARAH is implemented in palm_algs.py

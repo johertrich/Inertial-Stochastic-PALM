@@ -1,6 +1,7 @@
-This code belongs to the paper [3]. It contains a general implementation of PALM [1], iPALM [4], 
-SPRING-SARAH [2] and iSPRING-SARAH [3] for minimizing nonconvex and nonsmooth functions
-of the form F(x_1,...,x_s)= H(x_1,...,x_s) + \sum_{i=1}^s f_i(x_i). An overview over all of these 
+This code belongs to the paper [3]. Please cite [3], if you use this code.
+It contains a general implementation of PALM [1], iPALM [4], SPRING-SARAH [2] and 
+iSPRING-SARAH [3] for minimizing nonconvex and nonsmooth functions of the form 
+F(x_1,...,x_s)= H(x_1,...,x_s) + \sum_{i=1}^s f_i(x_i). An overview over all of these 
 algorithms can be found in [3].
 Convergence results are proven in the corresponding references under suitable assumptions.
 In particular, it is required that H is continuously differentiable and that the f_i are
