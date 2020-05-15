@@ -48,7 +48,7 @@ class PALM_Model(Model):
         return out
 
         
-def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=None,batch_size=1000,method='iSPRING-SARAH',inertial_step_size=None,step_size=None,sarah_seq=None,sarah_p=None,precompile=False,test_batch_size=None,ensure_full=False,estimate_lipschitz=True):
+def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=None,batch_size=1000,method='iSPRING-SARAH',inertial_step_size=None,step_size=None,sarah_seq=None,sarah_p=None,precompile=False,test_batch_size=None,ensure_full=False,estimate_lipschitz=False):
     # Minimizes the PALM_model using PALM/iPALM/SPRING-SARAH or iSPRING-SARAH.
     # Inputs:
     #       - model                 - PALM_Model for the objective function

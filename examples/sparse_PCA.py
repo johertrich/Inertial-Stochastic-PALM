@@ -41,7 +41,7 @@ def prox_2(arg,lam):
 
 batch_size=10000
 epch=20
-steps_per_epch=10
+steps_per_epch=8
 
 X_init=20*tf.random.uniform(shape=[n,r]).numpy()
 Y_init=20*tf.random.uniform(shape=[r,d]).numpy()
@@ -75,10 +75,11 @@ model4.f[1]=f2
 
 # run algorithms
 sarah_seq=tf.random.uniform(shape=[epch*steps_per_epch*4+100],minval=0,maxval=1,dtype=tf.float32)
-ispring=optimize_PALM(model,data=np.array(range(n)),batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.4,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq)
-spring=optimize_PALM(model2,data=np.array(range(n)),batch_size=batch_size,method='SPRING-SARAH',EPOCHS=epch,step_size=0.5,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq)
-palm=optimize_PALM(model3,data=np.array(range(n)),batch_size=batch_size,method='PALM',EPOCHS=epch,precompile=True)
 ipalm=optimize_PALM(model4,data=np.array(range(n)),batch_size=batch_size,method='iPALM',EPOCHS=epch,precompile=True)
+ispring=optimize_PALM(model,data=np.array(range(n)),batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.6,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True,sarah_p=200)
+spring=optimize_PALM(model2,data=np.array(range(n)),batch_size=batch_size,method='SPRING-SARAH',EPOCHS=epch,step_size=0.6,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True,sarah_p=200)
+palm=optimize_PALM(model3,data=np.array(range(n)),batch_size=batch_size,method='PALM',EPOCHS=epch,precompile=True)
+
 
 
 # Generate plots
