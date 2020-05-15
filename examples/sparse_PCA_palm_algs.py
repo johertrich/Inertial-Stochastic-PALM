@@ -1,10 +1,12 @@
 # This code belongs to the paper
 #
 # J. Hertrich and G. Steidl. 
-# Inertial stochastic palm and its application for learning Student-t mixture models. 
+# Inertial Stochastic PALM and its Application for Learning Student-t Mixture Models. 
 # ArXiv preprint arXiv:2005.02204, 2020.
 #
 # Please cite the paper, if you use the code.
+#
+# Note that we provide an alternative implementation of the sparse PCA in sparse_PCA_compare.py
 
 from palm_algs import *
 import matplotlib.pyplot as plt
