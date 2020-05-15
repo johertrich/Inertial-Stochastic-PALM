@@ -141,8 +141,8 @@ model3.H=H
 model4.H=H
 
 # run algorithms
-spring=optimize_PALM(model,data=samples,batch_size=batch_size,method='SPRING-SARAH',EPOCHS=epch,step_size=0.7,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq)
-ispring=optimize_PALM(model2,data=samples,batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.7,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq)
+spring=optimize_PALM(model,data=samples,batch_size=batch_size,method='SPRING-SARAH',EPOCHS=epch,step_size=0.7,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True)
+ispring=optimize_PALM(model2,data=samples,batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.7,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True)
 palm=optimize_PALM(model3,data=samples,batch_size=batch_size,method='PALM',EPOCHS=epch,step_size=1,precompile=True)
 ipalm=optimize_PALM(model4,data=samples,batch_size=batch_size,method='iPALM',EPOCHS=epch,step_size=1,precompile=True)
 

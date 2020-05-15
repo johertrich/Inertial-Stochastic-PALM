@@ -218,7 +218,7 @@ H(alpha,nu,mu,Sigma)=L(phi_1(alpha),phi_2(nu),mu,phi_3(Sigma)
 and f_1=f_2=f_3=f_4=0. Thus PALM becomes basically a block gradient descent algorithm.
 For more detailed description of this example, we refer to [3]. 
 
-The third example computes the sparse PCA of some data points. That is, to minimize
+The third example sparse_PCA.py computes the sparse PCA of some data points. That is, to minimize
 min_{X,Y} ||A-XY||_F^2+lambda_1 ||X||_1+lambda_2 ||Y||_1,
 where A is a n x d matrix, X is a n x r and Y is a r x d matrix and ||X||_1 denotes the 1-Norm of the vectorized
 matrix X.
@@ -226,12 +226,7 @@ For more details and further references on the sparse PCA we refer to [2] and [3
 We implement the sparse PCA by minimizing
 H(X,Y)+f_1(X)+f_2(Y)
 with H(X,Y)=\sum_{i=1}^n h_i(X,Y), where h_i(X,Y)=A_i-X_iY, where A_i and X_i denote the i-th line of A and X.
-Note that the gradient of h_i with respect to X is sparse. Since the general framework in palm_algs.py allocates 
-nethertheless the full gradient matrix wrt. to X, a more special implementation of SPRING-SARAH and iSPRING-SARAH
-yields a better convergence behaviour. Thus, we provide two implementations of the sparse PCA. The first one,
-sparse_PCA_palm_algs.py uses the framework palm_algs. For the comparison of PALM, iPALM, SPRING-SARAH and
-iSPRING-SARAH in [3] we use an implementation by scratch in sparse_PCA_compare.py. Here we do not compile the
-Tensorflow functions to get a better comparability of the algorithms.
+Note that the gradient of h_i with respect to X is sparse.
 
 --------------- 5. REFERENCES --------------------------
 
