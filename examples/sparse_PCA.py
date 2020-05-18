@@ -11,8 +11,8 @@
 from palm_algs import *
 import matplotlib.pyplot as plt
 
-lambda_1=1
-lambda_2=1
+lambda_1=0.1
+lambda_2=0.1
 n=1000000
 d=30
 r=5
@@ -40,8 +40,8 @@ def prox_2(arg,lam):
     return tf.math.sign(arg)*tf.math.maximum(0.,tf.math.abs(arg)-soft_thresh)
 
 batch_size=10000
-epch=20
-steps_per_epch=8
+epch=50
+steps_per_epch=5
 
 X_init=20*tf.random.uniform(shape=[n,r]).numpy()
 Y_init=20*tf.random.uniform(shape=[r,d]).numpy()
@@ -75,8 +75,8 @@ model4.f[1]=f2
 
 # run algorithms
 sarah_seq=tf.random.uniform(shape=[epch*steps_per_epch*4+100],minval=0,maxval=1,dtype=tf.float32)
-ipalm=optimize_PALM(model4,data=np.array(range(n)),batch_size=batch_size,method='iPALM',EPOCHS=epch,precompile=True)
-ispring=optimize_PALM(model,data=np.array(range(n)),batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.6,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True,sarah_p=200)
+ispring=optimize_PALM(model,data=np.array(range(n)),batch_size=batch_size,method='iSPRING-SARAH',EPOCHS=epch,step_size=0.6,inertial_step_size=0.9,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True,sarah_p=200)
+ipalm=optimize_PALM(model4,data=np.array(range(n)),batch_size=batch_size,method='iPALM',EPOCHS=epch,precompile=True,step_size=0.9)
 spring=optimize_PALM(model2,data=np.array(range(n)),batch_size=batch_size,method='SPRING-SARAH',EPOCHS=epch,step_size=0.6,steps_per_epoch=steps_per_epch,precompile=True,sarah_seq=sarah_seq,ensure_full=True,sarah_p=200)
 palm=optimize_PALM(model3,data=np.array(range(n)),batch_size=batch_size,method='PALM',EPOCHS=epch,precompile=True)
 

@@ -179,7 +179,7 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
             hess=tf.zeros_like(model.X[i])
             eval_hess=True
             for batch in normal_ds:
-                if eval_hess or estimate_lipschitz:
+                if eval_hess or not estimate_lipschitz:
                     with tf.GradientTape(persistent=True) as tape:
                         val=model(batch)
                         g=tape.gradient(val,model.X[i])
@@ -204,7 +204,9 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
                 grad=tape.gradient(val,model.X[i])
                 grad_sum=tf.reduce_sum(tf.multiply(grad,grad))
             hess=tape.gradient(val,model.X[i])
-        Lip=n*1.0/test_batch_size*tf.sqrt(tf.reduce_sum(tf.multiply(hess,hess)))
+        Lip=tf.sqrt(tf.reduce_sum(tf.multiply(hess,hess)))        
+        if estimate_lipschitz:        
+            Lip*=n*1.0/test_batch_size
         tau_i=tf.identity(Lip)
         tau_i=tf.math.multiply_no_nan(tau_i,1.-tf.cast(tf.math.is_nan(Lip),dtype=model.model_type))+1e10*tf.cast(tf.math.is_nan(Lip),dtype=model.model_type)
         model.X[i].assign(model.prox_funs[i](model.X[i]-grad/tau_i*step_size,tau_i/step_size))
@@ -265,7 +267,7 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
         print('precompiling finished')
 
     step=0
-    component=model.num_blocks
+    component=0
     grads=[None]*model.num_blocks
     old_args=[None]*model.num_blocks
     print('evaluate objective')
@@ -274,7 +276,8 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
     print(template.format(test_vals[0]))
     my_time=0.
     my_times=[0.]
-
+    
+    
     for epoch in range(EPOCHS):
         if batch_version:
             count=0
@@ -286,34 +289,41 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
                     toc=time.time()-tic
                     my_time+=toc
             else:
-                for batch in my_ds:
-                    #print(step)
-                    if component==model.num_blocks:
-                        step+=1
-                        component=0
-                        count+=1
-                        if count>=steps_per_epoch:
-                            break
-                    if sarah_seq is None:
-                        rand_num=tf.random.uniform(shape=[1],minval=0,maxval=1,dtype=tf.float32)
-                    else:
-                        rand_num=sarah_seq[(step-1)*model.num_blocks+component]
-                    full=False
-                    if step==1 or rand_num<sarah_p_inv:
-                        full=True
-                    if count==1 and ensure_full:
-                        full=True
-                    tic=time.time()
-                    if full:
-                        print('full step')
-                        out=train_step_full(tf.convert_to_tensor(step,dtype=model.model_type),component)
-                    else:
-                        out=train_step_not_full(tf.convert_to_tensor(step,dtype=model.model_type),grads[component],batch,old_args[component],component)
-                    toc=time.time()-tic
-                    my_time+=toc
-                    grads[component]=out[0]
-                    old_args[component]=out[1]
-                    component+=1
+                cont=True
+                while cont:
+                    if steps_per_epoch==np.inf:
+                        cont=False
+                    for batch in my_ds:
+                        #print(count)
+                        if step==0:
+                            step+=1
+                        if component==model.num_blocks:
+                            step+=1
+                            component=0
+                            count+=1
+                            if count>=steps_per_epoch:
+                                cont=False
+                                break
+                        if sarah_seq is None:
+                            rand_num=tf.random.uniform(shape=[1],minval=0,maxval=1,dtype=tf.float32)
+                        else:
+                            rand_num=sarah_seq[(step-1)*model.num_blocks+component]
+                        full=False
+                        if step==1 or rand_num<sarah_p_inv:
+                            full=True
+                        if count==1 and ensure_full:
+                            full=True
+                        tic=time.time()
+                        if full:
+                            print('full step')
+                            out=train_step_full(tf.convert_to_tensor(step,dtype=model.model_type),component)
+                        else:
+                            out=train_step_not_full(tf.convert_to_tensor(step,dtype=model.model_type),grads[component],batch,old_args[component],component)
+                        toc=time.time()-tic
+                        my_time+=toc
+                        grads[component]=out[0]
+                        old_args[component]=out[1]
+                        component+=1
                 
         else:
             step+=1
