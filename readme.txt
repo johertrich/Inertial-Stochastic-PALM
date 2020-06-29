@@ -58,6 +58,8 @@ The proximal operator is defined by prox_\lambda^f_i(x)=\argmin_{y}{\lambda/2 ||
 In our case the proximal operators are given by the projection on the 1-Ball and the soft-shrinkage function
 S_{1/lambda} with threshold 1/lambda.
 
+NOTE THAT THE FUNCTIONS H AND prox_i SHOULD BE COMPILABLE TO A TENSORFLOW GRAPH!!!
+
 - Specify inital values for x_1,..., x_s
 
 def H(X,batch):
@@ -179,15 +181,22 @@ Optional:
       - test_batch_size       - int. test_batch_size is the batch size used in the test step and in the steps
                                 where the full gradient is evaluated. This does not effect the algorithm itself.
                                 But it may effect the runtime. For test_batch_size=None it is set to batch_size.
+                                If test_batch_size<batch_size and method=SPRING-SARAH or method=iSPRING-SARAH,
+                                then also in the steps, where not the full gradient is evaluated only batches
+                                of size test_batch_size are passed through the function H.
                                 Default value: None
-      - ensure_full           - Boolean. For method=='SPRING-SARAH' or method=='iSPRING-SARAH': If ensure_full 
-                                is True, we evaluate in the first step of each epoch the full gradient. We  
-                                observed numerically, that this sometimes increases stability and convergence 
-                                speed of SPRING and iSPRING. For PALM and iPALM: no effect.
+      - ensure_full           - Boolean or int. For method=='SPRING-SARAH' or method=='iSPRING-SARAH': If
+                                ensure_full is True, we evaluate in the first step of each epoch the full
+                                gradient. We observed numerically, that this sometimes increases stability and
+                                convergence speed of SPRING and iSPRING. For PALM and iPALM: no effect.
+                                If a integer value p is provided, every p-th step is forced to be a full step
                                 Default value: False
       - estimate_lipschitz    - Boolean. If estimate_lipschitz==True, the Lipschitz constants are estimated based
                                 on the first minibatch in all steps, where the full gradient is evaluated.
                                 Default: True
+      - backup_dir            - String or None. If a String is provided, the variables X[i] are saved after
+                                every epoch. The weights are not saved if backup_dir is None.
+                                Default: 'backup'
 
 Outputs:
       - my_times              - list of floats. Contains the evaluation times of the training steps for each 

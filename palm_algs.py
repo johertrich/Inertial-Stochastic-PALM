@@ -10,6 +10,7 @@ from tensorflow.keras import Model
 import tensorflow as tf
 import numpy as np
 import time
+import os
 
 class PALM_Model(Model):
     # Models functions of the Form F(x_1,...,x_n)=H(x_1,...,x_n)+\sum_{i=1}^n f_i(x_i),
@@ -48,7 +49,7 @@ class PALM_Model(Model):
         return out
 
         
-def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=None,batch_size=1000,method='iSPRING-SARAH',inertial_step_size=None,step_size=None,sarah_seq=None,sarah_p=None,precompile=False,test_batch_size=None,ensure_full=False,estimate_lipschitz=False):
+def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=None,batch_size=1000,method='iSPRING-SARAH',inertial_step_size=None,step_size=None,sarah_seq=None,sarah_p=None,precompile=False,test_batch_size=None,ensure_full=False,estimate_lipschitz=False,backup_dir='backup'):
     # Minimizes the PALM_model using PALM/iPALM/SPRING-SARAH or iSPRING-SARAH.
     # Inputs:
     #       - model                 - PALM_Model for the objective function
@@ -94,15 +95,22 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
     #       - test_batch_size       - int. test_batch_size is the batch size used in the test step and in the steps
     #                                 where the full gradient is evaluated. This does not effect the algorithm itself.
     #                                 But it may effect the runtime. For test_batch_size=None it is set to batch_size.
+    #                                 If test_batch_size<batch_size and method=SPRING-SARAH or method=iSPRING-SARAH,
+    #                                 then also in the steps, where not the full gradient is evaluated only batches
+    #                                 of size test_batch_size are passed through the function H.
     #                                 Default value: None
-    #       - ensure_full           - Boolean. For method=='SPRING-SARAH' or method=='iSPRING-SARAH': If ensure_full 
-    #                                 is True, we evaluate in the first step of each epoch the full gradient. We  
-    #                                 observed numerically, that this sometimes increases stability and convergence 
-    #                                 speed of SPRING and iSPRING. For PALM and iPALM: no effect.
+    #       - ensure_full           - Boolean or int. For method=='SPRING-SARAH' or method=='iSPRING-SARAH': If
+    #                                 ensure_full is True, we evaluate in the first step of each epoch the full
+    #                                 gradient. We observed numerically, that this sometimes increases stability and
+    #                                 convergence speed of SPRING and iSPRING. For PALM and iPALM: no effect.
+    #                                 If a integer value p is provided, every p-th step is forced to be a full step
     #                                 Default value: False
     #       - estimate_lipschitz    - Boolean. If estimate_lipschitz==True, the Lipschitz constants are estimated based
     #                                 on the first minibatch in all steps, where the full gradient is evaluated.
     #                                 Default: True
+    #       - backup_dir            - String or None. If a String is provided, the variables X[i] are saved after
+    #                                 every epoch. The weights are not saved if backup_dir is None.
+    #                                 Default: 'backup'
     #
     # Outputs:
     #       - my_times              - list of floats. Contains the evaluation times of the training steps for each 
@@ -113,6 +121,12 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
         raise ValueError('Method '+str(method)+' is unknown!')
     if test_batch_size is None:
         test_batch_size=batch_size
+    if backup_dir is None:
+        backup=False
+    else:
+        backup=True
+        if not os.path.isdir(backup_dir):
+            os.mkdir(backup_dir)
     if step_size is None:
         if method=='PALM':
             step_size=1.
@@ -156,7 +170,12 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
         X_vals.append(model.X[i].numpy())
     model_for_old_values=PALM_Model(X_vals,dtype=model.dtype)
     model_for_old_values.H=model.H
-    #model_for_old_values.prox_funs=model.prox_funs
+    if type(ensure_full)==int:
+        full_steps=ensure_full
+        ensure_full=False
+    else:
+        full_steps=np.inf    
+    small_batches=batch_size>test_batch_size
     
     @tf.function
     def eval_objective():
@@ -169,6 +188,29 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
             return model.objective()            
     
     @tf.function
+    def grad_hess_batch(mod,batch,i):
+        with tf.GradientTape(persistent=True) as tape:
+            val=mod(batch)
+            g=tape.gradient(val,mod.X[i])
+            if isinstance(g,tf.IndexedSlices):
+                g2=g.values
+            else:
+                g2=g
+            grad_sum=tf.reduce_sum(tf.multiply(g2,g2))
+        h=tape.gradient(grad_sum,mod.X[i])   
+        fac=0.5/tf.sqrt(grad_sum)
+        h*=fac 
+        g=tf.identity(g)
+        h=tf.identity(h)
+        return g,h
+
+    @tf.function
+    def grad_batch(mod,batch,i):
+        with tf.GradientTape() as tape:
+            val=mod(batch)
+        g=tape.gradient(val,mod.X[i])
+        return g
+
     def train_step_full(step,i):
         extr=inertial_step_size*(step-1.)/(step+2.)
         Xi_save=tf.identity(model.X[i])
@@ -180,30 +222,15 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
             eval_hess=True
             for batch in normal_ds:
                 if eval_hess or not estimate_lipschitz:
-                    with tf.GradientTape(persistent=True) as tape:
-                        val=model(batch)
-                        g=tape.gradient(val,model.X[i])
-                        if isinstance(g,tf.IndexedSlices):
-                            g2=g.values
-                        else:
-                            g2=g
-                        grad_sum=tf.reduce_sum(tf.multiply(g2,g2))
-                    h=tape.gradient(grad_sum,model.X[i])
+                    g,h=grad_hess_batch(model,batch,i)
                     grad+=g
-                    fac=0.5/tf.sqrt(grad_sum)
-                    hess+=fac*h
+                    hess+=h
                     eval_hess=False
                 else:
-                    with tf.GradientTape() as tape:
-                        val=model(batch)
-                    g=tape.gradient(val,model.X[i])
+                    g=grad_batch(model,batch,i)
                     grad+=g
         else:
-            with tf.GradientTape(persistent=True) as tape:
-                val=model(None)
-                grad=tape.gradient(val,model.X[i])
-                grad_sum=tf.reduce_sum(tf.multiply(grad,grad))
-            hess=tape.gradient(val,model.X[i])
+            grad,hess=grad_hess_batch(model,None)
         Lip=tf.sqrt(tf.reduce_sum(tf.multiply(hess,hess)))        
         if estimate_lipschitz:        
             Lip*=n*1.0/test_batch_size
@@ -213,32 +240,32 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
         model_for_old_values.X[i].assign(Xi_save)
         return grad,old_arg
     
-    @tf.function
     def train_step_not_full(step,grads,batch,old_arg,i):
         extr=inertial_step_size*(step-1.)/(step+2.)
         Xi_save=tf.identity(model.X[i])
         model.X[i].assign_sub(extr*(model_for_old_values.X[i]-model.X[i]))
         old_arg_new=tf.identity(model.X[i])
-        with tf.GradientTape(persistent=True) as tape:
-            val=model(batch)
-            g=tape.gradient(val,model.X[i])
-            if isinstance(g,tf.IndexedSlices):                    
-                g2=g.values
-            else:
-                g2=g
-            grad_sum=tf.reduce_sum(tf.multiply(g2,g2))
-        hess=tape.gradient(grad_sum,model.X[i])
-        fac=0.5/tf.sqrt(grad_sum)
-        Lip=fac*tf.sqrt(tf.reduce_sum(tf.multiply(hess,hess)))
+        if small_batches:
+            step_ds=tf.data.Dataset.from_tensor_slices(batch).batch(test_batch_size)
+            g=tf.zeros_like(model.X[i])
+            h=tf.zeros_like(model.X[i])            
+            for small_batch in step_ds:
+                g_b,h_b=grad_hess_batch(model,small_batch,i)
+                g+=g_b
+                h+=h_b
+        else:
+            g,h=grad_hess_batch(model,batch,i)
+        Lip=tf.sqrt(tf.reduce_sum(tf.multiply(h,h)))
         tau_i=n*1.0/batch_size*tf.identity(Lip)
         tau_i=tf.math.multiply_no_nan(tau_i,1.-tf.cast(tf.math.is_nan(Lip),dtype=model.model_type))+1e10*tf.cast(tf.math.is_nan(Lip),dtype=model.model_type)
         model_for_old_values.X[i].assign(old_arg)
-        with tf.GradientTape() as tape:
-            val=model_for_old_values(batch)
-        #print(model_for_old_values.X[i])
-        g_o=tf.identity(tape.gradient(val,model_for_old_values.X[i]))
+        if small_batches:
+            g_o=tf.zeros_like(model.X[i])
+            for small_batch in step_ds:
+                g_o+=grad_batch(model_for_old_values,small_batch,i)
+        else:
+            g_o=grad_batch(model_for_old_values,batch,i)
         grad=n*1.0/batch_size*(g-g_o)+grads
-        #model.X[i].assign_sub(grad/tau_i*step_size)
         model.X[i].assign(model.prox_funs[i](model.X[i]-grad/tau_i*step_size,tau_i/step_size))
         model_for_old_values.X[i].assign(Xi_save)
         return grad,old_arg_new
@@ -313,6 +340,8 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
                             full=True
                         if count==1 and ensure_full:
                             full=True
+                        if (step-1)%full_steps==0:
+                            full=True
                         tic=time.time()
                         if full:
                             print('full step')
@@ -334,6 +363,9 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
         obj=eval_objective()
         template = 'Epoch {0}, Objective: {1:2.4f}, Time: {2:2.2f}'
         print(template.format(epoch+1,obj,my_time))
+        if backup:
+            for i in range(model.num_blocks):
+                model.X[i].numpy().tofile(backup_dir+'/epoch'+str(epoch+1)+'X'+str(i))
         test_vals.append(obj.numpy())
         my_times.append(my_time)
     return my_times,test_vals
