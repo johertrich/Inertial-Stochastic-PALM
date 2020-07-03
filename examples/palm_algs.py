@@ -49,7 +49,7 @@ class PALM_Model(Model):
         return out
 
         
-def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=None,batch_size=1000,method='iSPRING-SARAH',inertial_step_size=None,step_size=None,sarah_seq=None,sarah_p=None,precompile=False,test_batch_size=None,ensure_full=False,estimate_lipschitz=False,backup_dir='backup'):
+def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=None,batch_size=1000,method='iSPRING-SARAH',inertial_step_size=None,step_size=None,sarah_seq=None,sarah_p=None,precompile=False,test_batch_size=None,ensure_full=False,estimate_lipschitz=False,backup_dir='backup',mute=False):
     # Minimizes the PALM_model using PALM/iPALM/SPRING-SARAH or iSPRING-SARAH.
     # Inputs:
     #       - model                 - PALM_Model for the objective function
@@ -111,12 +111,15 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
     #       - backup_dir            - String or None. If a String is provided, the variables X[i] are saved after
     #                                 every epoch. The weights are not saved if backup_dir is None.
     #                                 Default: 'backup'
+    #       - mute                  - Boolean. For mute=True the evaluation of the objective function and all prints
+    #                                 will be suppressed.
+    #                                 Default: False
     #
     # Outputs:
     #       - my_times              - list of floats. Contains the evaluation times of the training steps for each 
     #                                 epochs.
     #       - test_vals             - list of floats. Contains the objective function computed in the test steps for
-    #                                 each epoch
+    #                                 each epoch. Note returned if mute=True.
     if not (method=='PALM' or method=='iPALM' or method=='SPRING-SARAH' or method=='iSPRING-SARAH'):
         raise ValueError('Method '+str(method)+' is unknown!')
     if test_batch_size is None:
@@ -230,7 +233,7 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
                     g=grad_batch(model,batch,i)
                     grad+=g
         else:
-            grad,hess=grad_hess_batch(model,None)
+            grad,hess=grad_hess_batch(model,None,i)
         Lip=tf.sqrt(tf.reduce_sum(tf.multiply(hess,hess)))        
         if estimate_lipschitz:        
             Lip*=n*1.0/test_batch_size
@@ -297,10 +300,11 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
     component=0
     grads=[None]*model.num_blocks
     old_args=[None]*model.num_blocks
-    print('evaluate objective')
-    test_vals=[eval_objective().numpy()]
-    template='Initial objective: {0:2.4f}'
-    print(template.format(test_vals[0]))
+    if not mute:
+        print('evaluate objective')
+        test_vals=[eval_objective().numpy()]
+        template='Initial objective: {0:2.4f}'
+        print(template.format(test_vals[0]))
     my_time=0.
     my_times=[0.]
     
@@ -344,7 +348,8 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
                             full=True
                         tic=time.time()
                         if full:
-                            print('full step')
+                            if not mute:
+                                print('full step')
                             out=train_step_full(tf.convert_to_tensor(step,dtype=model.model_type),component)
                         else:
                             out=train_step_not_full(tf.convert_to_tensor(step,dtype=model.model_type),grads[component],batch,old_args[component],component)
@@ -358,17 +363,20 @@ def optimize_PALM(model,EPOCHS=10,steps_per_epoch=np.inf,data=None,test_data=Non
             step+=1
             for i in range(model.num_blocks):
                 train_step_full(tf.convert_to_tensor(step,dtype=model.model_type),i)
-    
-        print('evaluate objective')
-        obj=eval_objective()
-        template = 'Epoch {0}, Objective: {1:2.4f}, Time: {2:2.2f}'
-        print(template.format(epoch+1,obj,my_time))
+        if not mute:
+            print('evaluate objective')
+            obj=eval_objective()
+            template = 'Epoch {0}, Objective: {1:2.4f}, Time: {2:2.2f}'
+            print(template.format(epoch+1,obj,my_time))
         if backup:
             for i in range(model.num_blocks):
                 model.X[i].numpy().tofile(backup_dir+'/epoch'+str(epoch+1)+'X'+str(i))
-        test_vals.append(obj.numpy())
+        if not mute:        
+            test_vals.append(obj.numpy())
         my_times.append(my_time)
-    return my_times,test_vals
+    if not mute:
+        return my_times,test_vals
+    return my_times
 
 
 

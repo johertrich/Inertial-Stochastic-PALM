@@ -197,12 +197,15 @@ Optional:
       - backup_dir            - String or None. If a String is provided, the variables X[i] are saved after
                                 every epoch. The weights are not saved if backup_dir is None.
                                 Default: 'backup'
+      - mute                  - Boolean. For mute=True the evaluation of the objective function and all prints
+                                will be suppressed.
+                                Default: False
 
 Outputs:
       - my_times              - list of floats. Contains the evaluation times of the training steps for each 
                                 epochs.
       - test_vals             - list of floats. Contains the objective function computed in the test steps for
-                                each epoch
+                                each epoch. Not returned if mute==True.
 
 --------------- 4. EXAMPLES ----------------------------
 
