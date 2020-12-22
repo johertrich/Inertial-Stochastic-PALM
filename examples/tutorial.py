@@ -1,7 +1,7 @@
 # This code belongs to the paper
 #
 # J. Hertrich and G. Steidl. 
-# Inertial Stochastic PALM and its Application for Learning Student-t Mixture Models. 
+# Inertial Stochastic PALM (iSPALM) and Applications in Machine Learning.
 # ArXiv preprint arXiv:2005.02204, 2020.
 #
 # Please cite the paper, if you use the code.
@@ -49,8 +49,8 @@ model.prox_funs=[prox_1,prox_2]
 model.f=[f_1,f_2]
 
 # run algorithm
-method='iSPRING-SARAH'
-optimize_PALM(model,data=data,method=method)
-
+method='iSPALM-SARAH'
+optim=PALM_Optimizer(model,data=data,method=method)
+optim.optimize(EPOCHS=10)
 # print result
 print('X_1='+str(model.X[0].numpy())+', X_2='+str(model.X[1].numpy()))
