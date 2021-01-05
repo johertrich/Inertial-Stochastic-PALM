@@ -285,19 +285,19 @@ where H(w) is the loss functions for the weights w and f is the characteristic f
 
 ## 5. REFERENCES
 
-[1] J. Bolte, S. Sabach, and M. Teboulle.
-Proximal alternating linearized minimization for nonconvex and nonsmooth problems.
+[1] J. Bolte, S. Sabach, and M. Teboulle.  
+Proximal alternating linearized minimization for nonconvex and nonsmooth problems.  
 Mathematical Programming, 146(1-2, Ser. A):459–494, 2014.
 
-[2] D. Driggs, J. Tang, J. Liang, M. Davies, and C.-B. Schönlieb.
-SPRING: A fast stochastic proximal alternating method for non-smooth non-convex optimization.
+[2] D. Driggs, J. Tang, J. Liang, M. Davies, and C.-B. Schönlieb.  
+SPRING: A fast stochastic proximal alternating method for non-smooth non-convex optimization.  
 ArXiv preprint arXiv:2002.12266, 2020.
 
-[3] J. Hertrich and G. Steidl. 
-Inertial Stochastic PALM (iSPALM) and Applications in Machine Learning.
+[3] J. Hertrich and G. Steidl.  
+Inertial Stochastic PALM (iSPALM) and Applications in Machine Learning.  
 ArXiv preprint arXiv:2005.02204, 2020.
 
-[4] T. Pock and S. Sabach.
-Inertial proximal alternating linearized minimization (iPALM) for nonconvex and nonsmooth problems.
+[4] T. Pock and S. Sabach.  
+Inertial proximal alternating linearized minimization (iPALM) for nonconvex and nonsmooth problems.  
 SIAM Journal on Imaging Sciences, 9(4):1756–1787, 2016.
 
