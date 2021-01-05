@@ -26,10 +26,10 @@ The script palm_algs.py requires the Python packages Numpy and Tensorflow 2.0.0.
 package Matplotlib.
 We tested the code using the following versions of the Python packages.
 
-Python          3.7.5
-Numpy           1.17.3
-Tensorflow      2.0.0
-Matplotlib      3.1.1
+Python          3.7.5  
+Numpy           1.17.3  
+Tensorflow      2.0.0  
+Matplotlib      3.1.1  
 
 Usually the code is also compatible with some other versions of the corresponding Python packages.
 
