@@ -1,8 +1,9 @@
 # This code belongs to the paper
 #
 # J. Hertrich and G. Steidl. 
-# Inertial Stochastic PALM (iSPALM) and Applications in Machine Learning. 
-# ArXiv preprint arXiv:2005.02204, 2020.
+# Inertial Stochastic PALM and Applications in Machine Learning. 
+# Sampling Theory, Signal Processing, and Data Analysis, 2022.
+# https://doi.org/10.1007/s43670-022-00021-x
 #
 # Please cite the paper, if you use the code.
 

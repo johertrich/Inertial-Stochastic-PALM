@@ -1,6 +1,8 @@
 # Inertial Stochastic PALM (iSPALM) and Applications in Machine Learning
 
-This code belongs to the paper [3]. Please cite [3], if you use this code.
+This code belongs to the paper [3]. It is availible at  
+https://doi.org/10.1007/s43670-022-00021-x  
+Please cite the paper, if you use this code.
 
 It contains a general implementation of PALM [1], iPALM [4], SPRING-SARAH [2] and 
 iSPALM-SARAH [3] for minimizing nonconvex and nonsmooth functions of the form 
@@ -294,8 +296,8 @@ SPRING: A fast stochastic proximal alternating method for non-smooth non-convex 
 ArXiv preprint arXiv:2002.12266, 2020.
 
 [3] J. Hertrich and G. Steidl.  
-Inertial Stochastic PALM (iSPALM) and Applications in Machine Learning.  
-ArXiv preprint arXiv:2005.02204, 2020.
+Inertial Stochastic PALM and Applications in Machine Learning.  
+Sampling Theory, Signal Processing, and Data Analysis, vol. 20, no. 5, 2022.
 
 [4] T. Pock and S. Sabach.  
 Inertial proximal alternating linearized minimization (iPALM) for nonconvex and nonsmooth problems.  
