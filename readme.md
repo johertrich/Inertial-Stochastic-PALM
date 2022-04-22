@@ -297,7 +297,7 @@ ArXiv preprint arXiv:2002.12266, 2020.
 
 [3] J. Hertrich and G. Steidl.  
 Inertial Stochastic PALM and Applications in Machine Learning.  
-Sampling Theory, Signal Processing, and Data Analysis, vol. 20, no. 5, 2022.
+Sampling Theory, Signal Processing, and Data Analysis, vol. 20, no. 4, 2022.
 
 [4] T. Pock and S. Sabach.  
 Inertial proximal alternating linearized minimization (iPALM) for nonconvex and nonsmooth problems.  

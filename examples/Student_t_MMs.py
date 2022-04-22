@@ -2,7 +2,7 @@
 #
 # J. Hertrich and G. Steidl. 
 # Inertial Stochastic PALM and Applications in Machine Learning. 
-# Sampling Theory, Signal Processing, and Data Analysis, 2022.
+# Sampling Theory, Signal Processing, and Data Analysis, vol. 20, no. 4, 2022.
 # https://doi.org/10.1007/s43670-022-00021-x
 #
 # Please cite the paper, if you use the code.
